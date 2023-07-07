@@ -1,0 +1,9 @@
+setup.py
+ecloud/CMSSEcloudOcrClient.py
+ecloud/Signature.py
+ecloud/__init__.py
+ecloud_python_sdk.egg-info/PKG-INFO
+ecloud_python_sdk.egg-info/SOURCES.txt
+ecloud_python_sdk.egg-info/dependency_links.txt
+ecloud_python_sdk.egg-info/requires.txt
+ecloud_python_sdk.egg-info/top_level.txt
