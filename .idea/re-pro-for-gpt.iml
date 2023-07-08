@@ -11,7 +11,6 @@
   <component name="PyNamespacePackagesService">
     <option name="namespacePackageFolders">
       <list>
-        <option value="$MODULE_DIR$/v2rayL-master" />
         <option value="$MODULE_DIR$/ecloud_SDK" />
       </list>
     </option>

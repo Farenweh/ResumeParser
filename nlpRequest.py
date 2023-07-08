@@ -1,5 +1,5 @@
-import csv
 import os
+import re
 import time
 
 import openai
@@ -11,10 +11,10 @@ import dataMasker
 os.environ["HTTP_PROXY"] = "http://127.0.0.1:7890"
 os.environ["HTTPS_PROXY"] = "http://127.0.0.1:7890"  # 在更换系统后修改为正确的代理
 isLogging = False
-csv_path = "test.csv"
 
 
-def gpt3_original(resource: str, prompt_: str, model="gpt-3.5-turbo-16k", role="资深HR") -> dict or None:
+def gpt3_original(resumeTxtFile: str, promptFile: str, model="gpt-3.5-turbo-16k", role="资深HR",
+                  reset=True) -> dict or None:
     def get_api_key():
         openai_key_file = 'key'
         with open(openai_key_file, 'r', encoding='utf-8') as f_:
@@ -34,48 +34,95 @@ def gpt3_original(resource: str, prompt_: str, model="gpt-3.5-turbo-16k", role="
 
     def logger(progress, progress_tag):
         if isLogging is True:
-            with open('log.txt', 'w') as log:  # 清空
+            with open('log.txt', 'w'):  # 清空
                 pass
             with open('log.txt', 'a') as log:
                 log.write(progress_tag + '\n')
                 log.writelines(progress)
                 log.write('\n\n')
 
+    def get_resume_txt(txt_file: str) -> str:
+        with open(txt_file, 'r', encoding='utf-8') as f_:
+            return f_.read()
+
+    def get_prompt(prompt_file: str) -> str:
+        with open(prompt_file, 'r', encoding='utf-8') as f_:
+            return f_.read()
+
+    def workAgeCalculator(workExpList: list) -> int:
+        # pattern = r"\d{4}\.\d{1,2}"
+        yearPattern = r"\d{4}"
+        monthPattern = r"(?<![0-9])\d{1,2}(?![0-9])"
+        workYear = 0
+        workMonth = 0
+        if workExpList is None:
+            return 0
+        for exp in workExpList:
+            if exp['工作时间'] is None:
+                continue
+            if exp['是否为实习经历'] is True:
+                continue
+            if exp['职位'] is not None:
+                if '实习' in exp['职位']:
+                    continue
+            if '至今' in exp['工作时间']:
+                exp['工作时间'] = exp['工作时间'].replace('至今', '-2023.4').replace('年', '.').replace('月', '')
+
+            yearPoints = list(map(int, re.findall(yearPattern, exp['工作时间'])))
+            monthPoints = list(map(int, re.findall(monthPattern, exp['工作时间'])))
+            try:
+                if len(yearPoints) < 2:  # workaround for 2021年4月到6月
+                    yearPoints.append(yearPoints[1])
+                workYear += yearPoints[1] - yearPoints[0]
+                workMonth += monthPoints[1] - monthPoints[0]
+            except:
+                return -1
+        if workMonth < 0:
+            workYear += int(workMonth / 12)
+        else:
+            workYear += int(workMonth / 12) + 1
+        return workYear
+
     openai.api_key = get_api_key()
     # 掩去电话和邮箱
-    resource_masked = data_masker.mask(resource)
+    resumeTxtFile = get_resume_txt(resumeTxtFile)
+    promptFile = get_prompt(promptFile)
+    resource_masked = dataMasker.mask(resumeTxtFile)
 
-    question = resource_masked["content_masked"] + '\n' + prompt_
-    # try:
-    rsp = openai.ChatCompletion.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": role},
-            {"role": "user", "content": question},
-        ],
-        temperature=0.1,
-    )
-    # except:
-    # return None
+    question = resource_masked["content_masked"] + '\n' + promptFile
+    if reset is True:
+        with open('prompts/reset.pmt', 'r', encoding='utf-8') as resetPrompt:
+            question = resetPrompt.read() + '\n' + question
+
+    try:
+        rsp = openai.ChatCompletion.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": role},
+                {"role": "user", "content": question},
+            ],
+            temperature=0.1,
+        )
+    except:
+        time.sleep(20)
+        rsp = openai.ChatCompletion.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": role},
+                {"role": "user", "content": question},
+            ],
+            temperature=0.1,
+        )
     content = rsp['choices'][0]["message"]["content"]
     logger(content, 'raw')
     content = trim(content)
     logger(content, 'trimmed')
     # 解码电话和邮箱
-    content = data_masker.demask(content, resource_masked)
+    content = dataMasker.demask(content, resource_masked)
     logger(content, 'de_masked')
-
-    return eval(content)
-
-
-def get_resume_txt(txt_file: str) -> str:
-    with open(txt_file, 'r', encoding='utf-8') as f_:
-        return f_.read()
-
-
-def get_prompt(prompt_file: str) -> str:
-    with open(prompt_file, 'r', encoding='utf-8') as f_:
-        return f_.read()
+    reportDict = eval(content)
+    reportDict['工作年限'] = workAgeCalculator(reportDict['工作经历'])
+    return reportDict
 
 
 def gpt_via_poe(question, model="gpt-3.5-turbo", role="资深HR"):

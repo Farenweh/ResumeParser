@@ -12,32 +12,31 @@ secret_key = '3610c16b398d4f6c90184ef91cd98910'
 url = 'https://api-wuxi-1.cmecloud.cn:8443'
 
 
-def ECloud_ocr_request(image_path: str, threshold: float) -> str:
-    request_url = '/api/ocr/v1/generic'
-    try:
-        ocr_client = CMSSEcloudOcrClient(access_key, secret_key, url)
-        response = ocr_client.request_ocr_service_file(requestpath=request_url, imagepath=image_path)
-        response_dict = json.loads(response.text)
-        print(image_path + '    ' + response_dict['requestId'])
-        #  完成后取消DEBUG模式
-        # with open('./response.jpg_txt', 'rb') as response:
-        #     response_dict = json.loads(response.read())
-        #     print(response_dict.items())
+def jpg_ocr(image_file: str, save_name: str, threshold=0.8) -> str:
+    def ECloud_ocr_request(image_path: str, threshold: float) -> str:
+        request_url = '/api/ocr/v1/generic'
+        try:
+            ocr_client = CMSSEcloudOcrClient(access_key, secret_key, url)
+            response = ocr_client.request_ocr_service_file(requestpath=request_url, imagepath=image_path)
+            response_dict = json.loads(response.text)
+            print(image_path + '    ' + response_dict['requestId'])
+            #  完成后取消DEBUG模式
+            # with open('./response.jpg_txt', 'rb') as response:
+            #     response_dict = json.loads(response.read())
+            #     print(response_dict.items())
 
-        if response_dict.get('body') is None:
-            return ''
-        words_info = response_dict.get('body')['content']['prism_wordsInfo']
-        words = ''
-        for element in words_info:
-            if element['prob'] >= threshold:
-                words += element['word'] + ' '
-        # print(words)
-        return words
-    except ValueError as e:
-        print(e)
+            if response_dict.get('body') is None:
+                return ''
+            words_info = response_dict.get('body')['content']['prism_wordsInfo']
+            words = ''
+            for element in words_info:
+                if element['prob'] >= threshold:
+                    words += element['word'] + ' '
+            # print(words)
+            return words
+        except ValueError as e:
+            print(e)
 
-
-def jpg_ocr(image_file: str, save_name: str, threshold: float) -> str:
     if not os.path.exists('jpg_txt'):
         os.mkdir('jpg_txt')
     result = ''
@@ -82,6 +81,6 @@ def pdf_ocr(pdf_file: str, save_name: str) -> str:
 if __name__ == "__main__":
     # jpg_ocr('./jpg/1.jpg', '1')
     for i in range(1, 101):
-        pdf_ocr('./pdfs/' + str(i), str(i))
+        jpg_ocr('./pdfs/' + str(i), str(i))
         print(i)
         # time.sleep(1)
