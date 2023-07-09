@@ -6,24 +6,25 @@ import openai
 import requests
 
 import dataMasker
+import proxyConfig
 
 # 需要设置代理才可以访问 api
-os.environ["HTTP_PROXY"] = "http://127.0.0.1:7890"
-os.environ["HTTPS_PROXY"] = "http://127.0.0.1:7890"  # 在更换系统后修改为正确的代理
+os.environ["HTTP_PROXY"] = proxyConfig.proxy
+os.environ["HTTPS_PROXY"] = proxyConfig.proxy  # 在更换系统后修改为正确的代理
 isLogging = False
+openai_key_file = 'key'
+
+with open(openai_key_file, 'r', encoding='utf-8') as f_:
+    openai_key = f_.read()
+openai.api_key = openai_key
 
 
-def gpt3_original(resumeTxtFile: str, promptFile: str, model="gpt-3.5-turbo-16k", role="资深HR",
-                  reset=True) -> dict or None:
-    def get_api_key():
-        openai_key_file = 'key'
-        with open(openai_key_file, 'r', encoding='utf-8') as f_:
-            openai_key = f_.read()
-        return openai_key
-
+def extracting(contentFile: str, promptFile='prompts/extract.pmt', model="gpt-3.5-turbo-16k",
+               role="You're an information extracting function",
+               reset=True) -> dict or None:
     def trim(raw_content: str) -> str:
-        #     1 去除前缀
-        raw_content = raw_content[raw_content.find('{'):]
+        # 1 去除前后缀
+        raw_content = raw_content[raw_content.find('{'):raw_content.rfind('}') + 1]
         # 2 null、未提供替换为None
         raw_content = raw_content.replace("null", "None").replace('未提供', 'None')
         # 3 学士换成本科
@@ -34,20 +35,20 @@ def gpt3_original(resumeTxtFile: str, promptFile: str, model="gpt-3.5-turbo-16k"
 
     def logger(progress, progress_tag):
         if isLogging is True:
-            with open('log.txt', 'w'):  # 清空
+            with open('extractLog.txt', 'w'):  # 清空
                 pass
-            with open('log.txt', 'a') as log:
+            with open('extractLog.txt', 'a') as log:
                 log.write(progress_tag + '\n')
                 log.writelines(progress)
                 log.write('\n\n')
 
-    def get_resume_txt(txt_file: str) -> str:
-        with open(txt_file, 'r', encoding='utf-8') as f_:
-            return f_.read()
+    def getResumeTxt(File: str) -> str:
+        with open(File, 'r', encoding='utf-8') as f:
+            return f.read()
 
-    def get_prompt(prompt_file: str) -> str:
-        with open(prompt_file, 'r', encoding='utf-8') as f_:
-            return f_.read()
+    def getPrompt(File: str) -> str:
+        with open(File, 'r', encoding='utf-8') as f__:
+            return f__.read()
 
     def workAgeCalculator(workExpList: list) -> int:
         # pattern = r"\d{4}\.\d{1,2}"
@@ -83,13 +84,16 @@ def gpt3_original(resumeTxtFile: str, promptFile: str, model="gpt-3.5-turbo-16k"
             workYear += int(workMonth / 12) + 1
         return workYear
 
-    openai.api_key = get_api_key()
     # 掩去电话和邮箱
-    resumeTxtFile = get_resume_txt(resumeTxtFile)
-    promptFile = get_prompt(promptFile)
-    resource_masked = dataMasker.mask(resumeTxtFile)
+    contentFile = getResumeTxt(contentFile)
+    promptFile = getPrompt(promptFile)
+    resource_masked = dataMasker.mask(contentFile)
 
     question = resource_masked["content_masked"] + '\n' + promptFile
+    if reset is True:
+        with open('prompts/reset.pmt', 'r', encoding='utf-8') as resetPrompt:
+            question = resetPrompt.read() + '\n' + question
+
     if reset is True:
         with open('prompts/reset.pmt', 'r', encoding='utf-8') as resetPrompt:
             question = resetPrompt.read() + '\n' + question
@@ -98,7 +102,7 @@ def gpt3_original(resumeTxtFile: str, promptFile: str, model="gpt-3.5-turbo-16k"
         rsp = openai.ChatCompletion.create(
             model=model,
             messages=[
-                {"role": "system", "content": role},
+                {"role": "function", "content": role, 'name': 'Extractor'},
                 {"role": "user", "content": question},
             ],
             temperature=0.1,
@@ -108,24 +112,24 @@ def gpt3_original(resumeTxtFile: str, promptFile: str, model="gpt-3.5-turbo-16k"
         rsp = openai.ChatCompletion.create(
             model=model,
             messages=[
-                {"role": "system", "content": role},
+                {"role": "function", "content": role, 'name': 'Extractor'},
                 {"role": "user", "content": question},
             ],
             temperature=0.1,
         )
     content = rsp['choices'][0]["message"]["content"]
-    logger(content, 'raw')
+    logger(content, '_____________________raw_____________________')
     content = trim(content)
-    logger(content, 'trimmed')
+    logger(content, '_____________________trimmed_____________________')
     # 解码电话和邮箱
     content = dataMasker.demask(content, resource_masked)
-    logger(content, 'de_masked')
+    logger(content, '_____________________de_masked_____________________')
     reportDict = eval(content)
     reportDict['工作年限'] = workAgeCalculator(reportDict['工作经历'])
     return reportDict
 
 
-def gpt_via_poe(question, model="gpt-3.5-turbo", role="资深HR"):
+def gpt_via_poe(question, model="gpt-3.5-turbo", role="资深HR"):  # Not available
     # Not available
     headers = {"Content-Type": "application/json", "Authorization": "chinchilla None"}
     data = {"model": model,

@@ -1,16 +1,18 @@
 # checkProxy()
 import ast
 import csv
+import json
 import re
 import time
 
-from nlpRequest import gpt3_original
+from extracting import extracting
 from pdf_2jpg import pdf_2jpg
+from profiling import profiling
 
 csv_path = "test1.csv"
 
 
-def nlpDev(start: int, endNotIncluded: int, promptFile: str) -> dict:
+def extractDev(start: int, endNotIncluded: int) -> dict:
     reports = {}
 
     with open(csv_path, "w", newline=""):  # 清除文件
@@ -18,8 +20,10 @@ def nlpDev(start: int, endNotIncluded: int, promptFile: str) -> dict:
         pass
 
     for i in range(start, endNotIncluded):
-        report = gpt3_original('pdf_txt/' + str(i) + '.txt', promptFile)
-        reports[str(i)] = report
+        report = extracting('pdf_txt/' + str(i) + '.txt')
+        with open('reports/' + str(i) + '.json', 'w') as reportJson:
+            json.dump(report, reportJson)
+        reports[i] = report
         print(i)
         print(report)  # 显示进度和当前情况
 
@@ -66,7 +70,7 @@ def restoreReportsDictFromCSV(csvFile: str) -> list:
     return data
 
 
-def workAgeCalculator(workExpList: list) -> int:
+def workAgeCalculator(workExpList: list) -> int:  # 已迁移
     # pattern = r"\d{4}\.\d{1,2}"
     yearPattern = r"\d{4}"
     monthPattern = r"(?<![0-9])\d{1,2}(?![0-9])"
@@ -98,15 +102,37 @@ def workAgeCalculator(workExpList: list) -> int:
         workYear += int(workMonth / 12)
     else:
         workYear += int(workMonth / 12) + 1
-    return workYear
+    return workYear  # 已迁移
+
+
+def profilingDev(start: int, endNotIncluded: int) -> dict:
+    profiles = {}
+    for i in range(start, endNotIncluded):
+        profile = profiling('reports/' + str(i) + '.json')
+        with open('profiles/' + str(i) + '.json', 'w') as reportJson:
+            json.dump(profile, reportJson)
+        profiles[i] = profile
+        print(i)
+        print(profile)  # 显示进度和当前情况
+    return profiles
 
 
 if __name__ == '__main__':
+    # with open('profiles/1.json') as f:
+    #     a = json.load(f)
+    #     print()
     T1 = time.time()
-    nlpDev(1, 3, "prompts/extract.pmt")
+    a = profilingDev(1, 3)
     T2 = time.time()
     t = (T2 - T1)
     print('程序运行时间:%.2f秒' % t)
+    print()
+
+    # T1 = time.time()
+    # extractDev(1, 3)
+    # T2 = time.time()
+    # t = (T2 - T1)
+    # print('程序运行时间:%.2f秒' % t)
 
     # with open('cal.csv', "w", newline=""):  # 清除文件
     #     title = False
