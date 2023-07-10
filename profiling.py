@@ -16,42 +16,41 @@ with open(openai_key_file, 'r', encoding='utf-8') as f_:
 openai.api_key = openai_key
 
 
-def summarize(report: dict, promptFile='prompts/profiling.pmt', model="gpt-3.5-turbo-16k",
-              role="You're a summarizing function",
-              reset=True) -> dict:
-    def getPrompt(prompt_file: str) -> str:
-        with open(prompt_file, 'r', encoding='utf-8') as f:
-            return f.read()
-
-    question = str(report['工作经历']) + "\n" + getPrompt(promptFile)
-    if reset is True:
-        with open('prompts/reset.pmt', 'r', encoding='utf-8') as resetPrompt:
-            question = resetPrompt.read() + '\n' + question
-
-    try:
-        rsp = openai.ChatCompletion.create(
-            model=model,
-            messages=[
-                {"role": "function", "content": role, 'name': 'Summarize'},
-                {"role": "user", "content": question},
-            ],
-            temperature=0.1,
-        )
-    except:
-        time.sleep(20)
-        rsp = openai.ChatCompletion.create(
-            model=model,
-            messages=[
-                {"role": "function", "content": role, 'name': 'Summarize'},
-                {"role": "user", "content": question},
-            ],
-            temperature=0.1,
-        )
-    content = rsp['choices'][0]["message"]["content"]
-    return eval(content)
-
-
 def profiling(reportFile: str) -> dict:
+    def summarize(report: dict, promptFile='prompts/profiling.pmt', model="gpt-3.5-turbo",
+                  role="You're a summarizing function",
+                  reset=True) -> dict:
+        def getPrompt(prompt_file: str) -> str:
+            with open(prompt_file, 'r', encoding='utf-8') as f:
+                return f.read()
+
+        question = str(report['工作经历']) + "\n" + getPrompt(promptFile)
+        if reset is True:
+            with open('prompts/reset.pmt', 'r', encoding='utf-8') as resetPrompt:
+                question = resetPrompt.read() + '\n' + question
+
+        try:
+            rsp = openai.ChatCompletion.create(
+                model=model,
+                messages=[
+                    {"role": "function", "content": role, 'name': 'Summarize'},
+                    {"role": "user", "content": question},
+                ],
+                temperature=0.1,
+            )
+        except:
+            time.sleep(20)
+            rsp = openai.ChatCompletion.create(
+                model=model,
+                messages=[
+                    {"role": "function", "content": role, 'name': 'Summarize'},
+                    {"role": "user", "content": question},
+                ],
+                temperature=0.1,
+            )
+        content = rsp['choices'][0]["message"]["content"]
+        return eval(content)
+
     profile = {}
     with open(reportFile, 'r', encoding='utf-8') as reportJson:
         report = json.load(reportJson)

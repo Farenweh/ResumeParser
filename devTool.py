@@ -118,22 +118,22 @@ def profilingDev(start: int, endNotIncluded: int) -> dict:
 
 
 if __name__ == '__main__':
-    # with open('profiles/1.json') as f:
-    #     a = json.load(f)
-    #     print()
-    T1 = time.time()
-    a = profilingDev(1, 3)
-    T2 = time.time()
-    t = (T2 - T1)
-    print('程序运行时间:%.2f秒' % t)
-    print()
-
+    with open('reports/4.json') as f:
+        a = json.load(f)
+        print(a)
     # T1 = time.time()
-    # extractDev(1, 3)
+    # a = profilingDev(1, 3)
     # T2 = time.time()
     # t = (T2 - T1)
     # print('程序运行时间:%.2f秒' % t)
+    # print()
 
+    # T1 = time.time()
+    # extractDev(1, 11)
+    # T2 = time.time()
+    # t = (T2 - T1)
+    # print('程序运行时间:%.2f秒' % t)
+    #
     # with open('cal.csv', "w", newline=""):  # 清除文件
     #     title = False
     #     pass

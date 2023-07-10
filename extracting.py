@@ -129,7 +129,7 @@ def extracting(contentFile: str, promptFile='prompts/extract.pmt', model="gpt-3.
     return reportDict
 
 
-def gpt_via_poe(question, model="gpt-3.5-turbo", role="资深HR"):  # Not available
+def viaPoe(question, model="gpt-3.5-turbo", role="资深HR"):  # Not available
     # Not available
     headers = {"Content-Type": "application/json", "Authorization": "chinchilla None"}
     data = {"model": model,
