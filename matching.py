@@ -6,8 +6,6 @@ import openai
 
 from config import Config
 
-# os.environ["HTTP_PROXY"] = proxyConfig.proxy
-# os.environ["HTTPS_PROXY"] = proxyConfig.proxy
 isLogging = False
 openai_key_file = 'config/key'
 
@@ -44,7 +42,7 @@ def matching(report: dict) -> dict:
                 temperature=0.1,
             )
         except:
-            time.sleep(20)
+            time.sleep(10)
             rsp = openai.ChatCompletion.create(
                 model=model,
                 messages=[
@@ -63,13 +61,13 @@ def matching(report: dict) -> dict:
     for jobFile in os.listdir('jobTitles'):
         with open('jobTitles/' + jobFile, 'r', encoding='utf-8') as f:
             jobTitleRequirement = f.read()
-            matchingResult[jobFile] = analyze(repoForAnalyze, jobTitleRequirement)
-        print(jobFile, matchingResult[jobFile])
+            matchingResult[jobFile.split('.')[0]] = analyze(repoForAnalyze, jobTitleRequirement)
+        # print(jobFile, matchingResult[jobFile.split('.')[0]])
     return matchingResult
 
 
 if __name__ == '__main__':
-    with open('reports/' + '1' + '.json') as repoFile:
+    with open('reports/' + '101' + '.json') as repoFile:
         repo = json.load(repoFile)
     a = matching(repo)
     print(a)

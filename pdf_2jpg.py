@@ -8,7 +8,7 @@ if not os.path.exists('jpgs'):
     os.mkdir('jpgs')
 
 
-def pdf_2jpg(pdf_file: str, save_name: str, combine=True) -> None:
+def pdf_2jpg(pdf_file: str, save_name: str, combine=True) -> Image.Image | list:
     def enhance(pic: Image.Image) -> Image.Image:
         # 锐度增强
         enh_sha = ImageEnhance.Sharpness(pic)
@@ -22,6 +22,7 @@ def pdf_2jpg(pdf_file: str, save_name: str, combine=True) -> None:
     pages = convert_from_path(pdf_file, dpi=500, jpegopt={'quality': 90}, thread_count=16, grayscale=True)
 
     if combine is False:
+        forReturn = []
         for j in range(len(pages)):
             result = Image.new('L', (pages[j].width, pages[j].height))  # 生成灰度图
             if save_name[-4:] == '.jpg':
@@ -39,6 +40,8 @@ def pdf_2jpg(pdf_file: str, save_name: str, combine=True) -> None:
             with open(save_file, 'w'):
                 pass
             result.save(save_file, 'jpeg')
+            forReturn.append(result)
+        return forReturn
     else:
         result = Image.new('L', (pages[0].width * 1, pages[0].height * len(pages)))  # 创建成品图的画布
         for j in range(len(pages)):
@@ -51,10 +54,11 @@ def pdf_2jpg(pdf_file: str, save_name: str, combine=True) -> None:
         with open(save_file, 'w'):
             pass
         result.save(save_file, 'JPEG')
+        return result
 
 
 if __name__ == "__main__":
-    for i in range(101, 102):
-        print("converting " + str(i))
-        pdf_2jpg('pdfs/' + str(i) + '.pdf', str(i))
-        pdf_2jpg('pdfs/' + str(i) + '.pdf', str(i), combine=False)
+    for f in os.listdir('pdfs'):
+        print("converting " + f)
+        # pdf_2jpg('pdfs/' + str(i) + '.pdf', str(i))
+        pdf_2jpg('pdfs/' + f, f.split('.')[0], combine=False)

@@ -1,9 +1,7 @@
-import os
 import re
 import time
 
 import openai
-import requests
 
 import dataMasker
 from config import Config
@@ -17,10 +15,9 @@ with open(openai_key_file, 'r', encoding='utf-8') as f_:
     openai_key = f_.read()
 openai.api_key = openai_key
 openai.api_base = Config.url
-a = openai.api_base
 
 
-def extracting(contentFile: str, promptFile='prompts/extract.pmt', model=Config.model,
+def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config.model,
                role="You're an information extracting function",
                reset=True) -> dict or None:
     def trim(raw_content: str) -> str:
@@ -43,9 +40,9 @@ def extracting(contentFile: str, promptFile='prompts/extract.pmt', model=Config.
                 log.writelines(progress)
                 log.write('\n\n')
 
-    def getResumeTxt(File: str) -> str:
-        with open(File, 'r', encoding='utf-8') as f:
-            return f.read()
+    # def getResumeTxt(File: str) -> str:
+    #     with open(File, 'r', encoding='utf-8') as f:
+    #         return f.read()
 
     def getPrompt(File: str) -> str:
         with open(File, 'r', encoding='utf-8') as f__:
@@ -85,10 +82,9 @@ def extracting(contentFile: str, promptFile='prompts/extract.pmt', model=Config.
             workYear += int(workMonth / 12) + 1
         return workYear
 
-    # 掩去电话和邮箱
-    contentFile = getResumeTxt(contentFile)
     promptFile = getPrompt(promptFile)
-    resource_masked = dataMasker.mask(contentFile)
+    # 掩去电话和邮箱
+    resource_masked = dataMasker.mask(resumeString)
 
     question = resource_masked["content_masked"] + '\n' + promptFile
     if reset is True:
@@ -130,32 +126,5 @@ def extracting(contentFile: str, promptFile='prompts/extract.pmt', model=Config.
     return reportDict
 
 
-def viaPoe(question, model="gpt-3.5-turbo", role="资深HR"):  # Not available
-    # Not available
-    headers = {"Content-Type": "application/json", "Authorization": "chinchilla None"}
-    data = {"model": model,
-            "messages": [
-                {"role": "system", "content": role},
-                {"role": "user", "content": question}],
-            "temperature": 0.1}
-    rsp = requests.post("https://http://167.172.65.148:3700/v1/chat/completions", headers=headers, data=data)
-    return rsp
-
-
-def check_proxy():
-    proxies = {
-        "http": os.environ["HTTP_PROXY"],
-        "https": os.environ["HTTPS_PROXY"]
-    }
-    try:
-        r = requests.get("https://ipapi.co/json/", proxies=proxies, timeout=4)
-        data = r.json()
-        country = data['country_name']
-        # city = data['city']
-        result = f"代理所在地：{country}"
-        print(result)
-        return result
-    except:
-        result = "代理所在地查询超时，代理可能无效"
-        print(result)
-        return result
+if __name__ == '__main__':
+    pass

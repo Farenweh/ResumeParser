@@ -1,4 +1,3 @@
-import json
 import time
 
 import openai
@@ -16,7 +15,7 @@ openai.api_key = openai_key
 openai.api_base = Config.url
 
 
-def profiling(reportFile: str) -> dict:
+def profiling(reportDict: dict) -> dict:
     def summarize(report: dict, promptFile='prompts/profiling.pmt', model=Config.model,
                   role="You're a summarizing function",
                   reset=True) -> dict:
@@ -52,8 +51,7 @@ def profiling(reportFile: str) -> dict:
         return eval(content)
 
     profile = {}
-    with open(reportFile, 'r', encoding='utf-8') as reportJson:
-        report = json.load(reportJson)
+    report = reportDict
     print(report)
     profile['姓名'] = report['姓名']
     profile['年龄'] = report['年龄']
@@ -61,5 +59,15 @@ def profiling(reportFile: str) -> dict:
     profile['工作经历'] = []
     for e in report['工作经历']:
         profile['工作经历'].append({'公司': e['公司名称'], '职位': e['职位'], '工作时间': e['工作时间']})
-    profile['行业经验'] = summarize(report)
+    rsp = summarize(report)
+    profile['行业经验'] = rsp['行业']
+    profile['领域方向'] = rsp['领域']
+
     return profile
+
+
+if __name__ == '__main__':
+    # with open('profiles/' + 'sample', 'w', encoding='utf-8') as f:
+    #     json.dump(profiling('reports/101.json'), f)
+
+    pass
