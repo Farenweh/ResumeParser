@@ -6,20 +6,21 @@ import openai
 import requests
 
 import dataMasker
-import proxyConfig
+from config import Config
 
-# 需要设置代理才可以访问 api
-os.environ["HTTP_PROXY"] = proxyConfig.proxy
-os.environ["HTTPS_PROXY"] = proxyConfig.proxy  # 在更换系统后修改为正确的代理
+# os.environ["HTTP_PROXY"] = proxyConfig.proxy
+# os.environ["HTTPS_PROXY"] = proxyConfig.proxy  # 在更换系统后修改为正确的代理
 isLogging = False
-openai_key_file = 'key'
+openai_key_file = 'config/key'
 
 with open(openai_key_file, 'r', encoding='utf-8') as f_:
     openai_key = f_.read()
 openai.api_key = openai_key
+openai.api_base = Config.url
+a = openai.api_base
 
 
-def extracting(contentFile: str, promptFile='prompts/extract.pmt', model="gpt-3.5-turbo-16k",
+def extracting(contentFile: str, promptFile='prompts/extract.pmt', model=Config.model,
                role="You're an information extracting function",
                reset=True) -> dict or None:
     def trim(raw_content: str) -> str:
@@ -108,7 +109,7 @@ def extracting(contentFile: str, promptFile='prompts/extract.pmt', model="gpt-3.
             temperature=0.1,
         )
     except:
-        time.sleep(20)
+        time.sleep(5)
         rsp = openai.ChatCompletion.create(
             model=model,
             messages=[

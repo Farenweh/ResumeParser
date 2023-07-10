@@ -4,8 +4,8 @@ from PIL import Image
 from PIL import ImageEnhance
 from pdf2image import convert_from_path
 
-if not os.path.exists('jpg'):
-    os.mkdir('jpg')
+if not os.path.exists('jpgs'):
+    os.mkdir('jpgs')
 
 
 def pdf_2jpg(pdf_file: str, save_name: str, combine=True) -> None:
@@ -25,13 +25,13 @@ def pdf_2jpg(pdf_file: str, save_name: str, combine=True) -> None:
         for j in range(len(pages)):
             result = Image.new('L', (pages[j].width, pages[j].height))  # 生成灰度图
             if save_name[-4:] == '.jpg':
-                if not os.path.exists('jpg/' + save_name[:-4]):
-                    os.mkdir('jpg/' + save_name)
-                save_file = 'jpg/' + save_name[:-4] + '/' + str(j) + '.jpg'
+                if not os.path.exists('jpgs/' + save_name[:-4]):
+                    os.mkdir('jpgs/' + save_name)
+                save_file = 'jpgs/' + save_name[:-4] + '/' + str(j) + '.jpg'
             else:
-                if not os.path.exists('jpg/' + save_name):
-                    os.mkdir('jpg/' + save_name)
-                save_file = 'jpg/' + save_name + '/' + str(j) + '.jpg'
+                if not os.path.exists('jpgs/' + save_name):
+                    os.mkdir('jpgs/' + save_name)
+                save_file = 'jpgs/' + save_name + '/' + str(j) + '.jpg'
 
             image_enhanced = enhance(pages[j])
             result.paste(image_enhanced)
@@ -44,12 +44,17 @@ def pdf_2jpg(pdf_file: str, save_name: str, combine=True) -> None:
         for j in range(len(pages)):
             image_enhanced = enhance(pages[j])
             result.paste(image_enhanced, (0, j * pages[j].height))
-        with open(save_name, 'w'):
+        if save_name[-4:] == '.jpg':
+            save_file = 'jpgs/' + save_name + '.jpg'
+        else:
+            save_file = 'jpgs/' + save_name + '.jpg'
+        with open(save_file, 'w'):
             pass
-        result.save(save_name, 'JPEG')
+        result.save(save_file, 'JPEG')
 
 
 if __name__ == "__main__":
-    for i in range(1, 101):
+    for i in range(101, 102):
         print("converting " + str(i))
         pdf_2jpg('pdfs/' + str(i) + '.pdf', str(i))
+        pdf_2jpg('pdfs/' + str(i) + '.pdf', str(i), combine=False)

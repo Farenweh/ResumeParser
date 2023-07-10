@@ -80,7 +80,7 @@ def pdf_ocr(pdf_file: str, save_name: str) -> str:
 
 if __name__ == "__main__":
     # jpg_ocr('./jpg/1.jpg', '1')
-    for i in range(1, 101):
-        jpg_ocr('./pdfs/' + str(i), str(i))
+    for i in range(101, 102):
+        jpg_ocr('jpgs/' + str(i), str(i))
         print(i)
         # time.sleep(1)

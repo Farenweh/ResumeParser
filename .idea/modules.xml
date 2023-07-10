@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/re-pro-for-gpt.iml" filepath="$PROJECT_DIR$/.idea/re-pro-for-gpt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/resumeAnalyzerWithAIpaca13BandGPT4.iml" filepath="$PROJECT_DIR$/.idea/resumeAnalyzerWithAIpaca13BandGPT4.iml" />
     </modules>
   </component>
 </project>

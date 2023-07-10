@@ -18,7 +18,7 @@ def docx_2pdf(docx_file: str, save_name):
 
 
 if __name__ == "__main__":
-    for i in range(1, 101):
+    for i in range(101, 102):
         inputFile = 'docxs/' + str(i) + '.docx'
         docx_2pdf(inputFile, str(i))
         print(i)

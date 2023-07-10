@@ -1,19 +1,20 @@
-import os
 import json
+import os
 import time
 
 import openai
 
-import proxyConfig
+from config import Config
 
-os.environ["HTTP_PROXY"] = proxyConfig.proxy
-os.environ["HTTPS_PROXY"] = proxyConfig.proxy
+# os.environ["HTTP_PROXY"] = proxyConfig.proxy
+# os.environ["HTTPS_PROXY"] = proxyConfig.proxy
 isLogging = False
-openai_key_file = 'key'
+openai_key_file = 'config/key'
 
 with open(openai_key_file, 'r', encoding='utf-8') as f_:
     openai_key = f_.read()
 openai.api_key = openai_key
+openai.api_base = Config.url
 
 
 def matching(report: dict) -> dict:
@@ -21,7 +22,7 @@ def matching(report: dict) -> dict:
         # 将字典中被选定的键值对转换为字符串并拼接起来
         return ", ".join([f"{k}: {v}" for k, v in d.items() if k in selected_keys])
 
-    def analyze(features: str, requirements: str, promptFile='prompts/matching.pmt', model="gpt-3.5-turbo-16k",
+    def analyze(features: str, requirements: str, promptFile='prompts/matching.pmt', model=Config.model,
                 role="You're an HR",
                 reset=True) -> bool:
         def getPrompt(prompt_file: str) -> str:

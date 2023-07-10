@@ -1,23 +1,23 @@
 import json
-import os
 import time
 
 import openai
 
-import proxyConfig
+from config import Config
 
-os.environ["HTTP_PROXY"] = proxyConfig.proxy
-os.environ["HTTPS_PROXY"] = proxyConfig.proxy
+# os.environ["HTTP_PROXY"] = proxyConfig.proxy
+# os.environ["HTTPS_PROXY"] = proxyConfig.proxy
 isLogging = False
-openai_key_file = 'key'
+openai_key_file = 'config/key'
 
 with open(openai_key_file, 'r', encoding='utf-8') as f_:
     openai_key = f_.read()
 openai.api_key = openai_key
+openai.api_base = Config.url
 
 
 def profiling(reportFile: str) -> dict:
-    def summarize(report: dict, promptFile='prompts/profiling.pmt', model="gpt-3.5-turbo",
+    def summarize(report: dict, promptFile='prompts/profiling.pmt', model=Config.model,
                   role="You're a summarizing function",
                   reset=True) -> dict:
         def getPrompt(prompt_file: str) -> str:

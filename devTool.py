@@ -118,37 +118,38 @@ def profilingDev(start: int, endNotIncluded: int) -> dict:
 
 
 if __name__ == '__main__':
-    with open('reports/4.json') as f:
-        a = json.load(f)
-        print(a)
+    # with open('reports/4.json') as f:
+    #     a = json.load(f)
+    #     print(a)
     # T1 = time.time()
-    # a = profilingDev(1, 3)
+    # a = profilingDev(1, 2)
     # T2 = time.time()
     # t = (T2 - T1)
     # print('程序运行时间:%.2f秒' % t)
     # print()
 
-    # T1 = time.time()
-    # extractDev(1, 11)
-    # T2 = time.time()
-    # t = (T2 - T1)
-    # print('程序运行时间:%.2f秒' % t)
-    #
-    # with open('cal.csv', "w", newline=""):  # 清除文件
-    #     title = False
-    #     pass
-    # a = restoreReportsDictFromCSV('test.csv')
-    # for i in range(len(a)):
-    #     if i == 47:  # for debug
-    #         pass
-    #     a[i]['工作年限'] = workAgeCalculator(a[i]['工作经历'])
-    #
-    #     with open('cal.csv', "a", newline="") as csv_file:
-    #         writer = csv.writer(csv_file)
-    #         # 写入标题行
-    #         if title is False:
-    #             writer.writerow(a[i].keys())
-    #             title = True
-    #         # 写入数据行
-    #         writer.writerow(a[i].values())
-    # print()
+    T1 = time.time()
+    extractDev(1, 2)
+    T2 = time.time()
+    t = (T2 - T1)
+    print('程序运行时间:%.2f秒' % t)
+
+    with open('cal.csv', "w", newline=""):  # 清除文件
+        title = False
+        pass
+    a = restoreReportsDictFromCSV('test.csv')
+    for i in range(len(a)):
+        if i == 47:  # for debug
+            pass
+        a[i]['工作年限'] = workAgeCalculator(a[i]['工作经历'])
+
+        with open('cal.csv', "a", newline="") as csv_file:
+            writer = csv.writer(csv_file)
+            # 写入标题行
+            if title is False:
+                writer.writerow(a[i].keys())
+                title = True
+            # 写入数据行
+            writer.writerow(a[i].values())
+    print()
+    pass
