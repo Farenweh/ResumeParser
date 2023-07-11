@@ -9,6 +9,9 @@ from config import Config
 isLogging = False
 openai_key_file = 'config/key'
 
+if not os.path.exists('matches'):
+    os.mkdir('matches')
+
 with open(openai_key_file, 'r', encoding='utf-8') as f_:
     openai_key = f_.read()
 openai.api_key = openai_key
@@ -20,7 +23,7 @@ def matching(report: dict) -> dict:
         # 将字典中被选定的键值对转换为字符串并拼接起来
         return ", ".join([f"{k}: {v}" for k, v in d.items() if k in selected_keys])
 
-    def analyze(features: str, requirements: str, promptFile='prompts/matching.pmt', model=Config.model,
+    def analyze(features: str, requirements: str, promptFile='prompts/matching.pmt', model=Config.model0,
                 role="You're an HR",
                 reset=False, progressSign=False) -> bool:
         def getPrompt(prompt_file: str) -> str:
@@ -28,9 +31,9 @@ def matching(report: dict) -> dict:
                 return f.read()
 
         if progressSign is False:
-            question = requirements + "\n" + features + '\n' + getPrompt(promptFile)
+            question = features + "\n" + "记住这位求职者的信息" + "\n" + requirements + '\n' + getPrompt(promptFile)
         else:
-            question = requirements + '\n' + getPrompt(promptFile)
+            question = requirements + '\n' + "回忆刚刚的求职者信息。" + getPrompt(promptFile)
 
         if reset is True:
             with open('prompts/reset.pmt', 'r', encoding='utf-8') as resetPrompt:
@@ -71,11 +74,13 @@ def matching(report: dict) -> dict:
                                                             progressSign=inProgress)
         # print(jobFile, matchingResult[jobFile.split('.')[0]])
         inProgress = True
+    with open('matches/' + str(hash(report.values())), 'w') as f:
+        json.dump(matchingResult, f)
     return matchingResult
 
 
 if __name__ == '__main__':
-    with open('reports/' + '101' + '.json') as repoFile:
+    with open('reports/' + '0' + '.json') as repoFile:
         repo = json.load(repoFile)
     a = matching(repo)
     print(a)

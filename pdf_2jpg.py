@@ -8,7 +8,7 @@ if not os.path.exists('jpgs'):
     os.mkdir('jpgs')
 
 
-def pdf_2jpg(pdf_file: str, save_name: str, combine=True) -> Image.Image | list:
+def pdf_2jpg(pdf_file: str, save_name='', combine=False) -> Image.Image | list:
     def enhance(pic: Image.Image) -> Image.Image:
         # 锐度增强
         enh_sha = ImageEnhance.Sharpness(pic)
@@ -18,6 +18,9 @@ def pdf_2jpg(pdf_file: str, save_name: str, combine=True) -> Image.Image | list:
         enh_con = ImageEnhance.Contrast(image_sharped)
         contrast = 2
         return enh_con.enhance(contrast)
+
+    if save_name == '':
+        save_name = pdf_file.split('/')[-1].split('.')[0]
 
     pages = convert_from_path(pdf_file, dpi=400, jpegopt={'quality': 80}, thread_count=16, grayscale=True)
 

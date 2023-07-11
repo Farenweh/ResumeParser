@@ -1,3 +1,5 @@
+import json
+import os
 import re
 import time
 
@@ -11,13 +13,16 @@ from config import Config
 isLogging = False
 openai_key_file = 'config/key'
 
+if not os.path.exists('reports'):
+    os.mkdir('reports')
+
 with open(openai_key_file, 'r', encoding='utf-8') as f_:
     openai_key = f_.read()
 openai.api_key = openai_key
 openai.api_base = Config.url
 
 
-def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config.model,
+def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config.model0,
                role="You're an information extracting function",
                reset=True) -> dict or None:
     def trim(raw_content: str) -> str:
@@ -123,6 +128,9 @@ def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config
     logger(content, '_____________________de_masked_____________________')
     reportDict = eval(content)
     reportDict['工作年限'] = workAgeCalculator(reportDict['工作经历'])
+    # cache
+    with open('reports/' + str(hash(resumeString)) + '.json', 'w') as f:
+        json.dump(reportDict, f)
     return reportDict
 
 

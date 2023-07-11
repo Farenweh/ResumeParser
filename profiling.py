@@ -1,3 +1,5 @@
+import json
+import os
 import time
 
 import openai
@@ -9,6 +11,9 @@ from config import Config
 isLogging = False
 openai_key_file = 'config/key'
 
+if not os.path.exists('profiles'):
+    os.mkdir('profiles')
+
 with open(openai_key_file, 'r', encoding='utf-8') as f_:
     openai_key = f_.read()
 openai.api_key = openai_key
@@ -16,7 +21,7 @@ openai.api_base = Config.url
 
 
 def profiling(reportDict: dict) -> dict:
-    def summarize(report: dict, promptFile='prompts/profiling.pmt', model=Config.model,
+    def summarize(report: dict, promptFile='prompts/profiling.pmt', model=Config.model0,
                   role="You're a summarizing function",
                   reset=True) -> dict:
         def getPrompt(prompt_file: str) -> str:
@@ -52,7 +57,7 @@ def profiling(reportDict: dict) -> dict:
 
     profile = {}
     report = reportDict
-    print(report)
+    # print(report)
     profile['姓名'] = report['姓名']
     profile['年龄'] = report['年龄']
     profile['教育背景'] = report['最高学位']
@@ -62,12 +67,12 @@ def profiling(reportDict: dict) -> dict:
     rsp = summarize(report)
     profile['行业经验'] = rsp['行业']
     profile['领域方向'] = rsp['领域']
-
+    with open('profiles/' + str(hash(report.values())) + '.json', 'w') as f:
+        json.dump(profile, f)
     return profile
 
 
 if __name__ == '__main__':
-    # with open('profiles/' + 'sample', 'w', encoding='utf-8') as f:
-    #     json.dump(profiling('reports/101.json'), f)
-
+    with open('reports/3.json', 'r') as f:
+        print(profiling(json.load(f)))
     pass

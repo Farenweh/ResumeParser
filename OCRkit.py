@@ -15,7 +15,7 @@ secret_key = '3610c16b398d4f6c90184ef91cd98910'
 url = 'https://api-wuxi-1.cmecloud.cn:8443'
 
 
-def pics_ocr(image_file_WenJianJia: str, save_name: str,
+def pics_ocr(image_file_WenJianJia: str, save_name='',
              synthesize_between_pages=True) -> str | list:  # image_file是文件夹！文件夹！默认会一次性把文件夹下面的所有图片都OCR一遍然后粘成一个str，否则按图片分开放进list
     def ECloud_ocr_request(image_path: str) -> None | list:
         time.sleep(1)  # 防止被当成ddos
@@ -73,14 +73,14 @@ def pics_ocr(image_file_WenJianJia: str, save_name: str,
             # done Layout Analyze
             final_words = layoutAnalyze(words_info)
             # # debug
-            # with open('101.json', 'w') as debug:
+            # with open('108.json', 'w') as debug:
             #     json.dump(words_info, debug)
             # # debug
             return final_words
         except ValueError as error:
             print(error)
 
-    def layoutAnalyze(input_Words_Info: list, threshold=220) -> list:
+    def layoutAnalyze(input_Words_Info: list, threshold=200) -> list:
         # 将传入的words_info进行layout分析，然后重排序并回传
         def distance(rect1, rect2) -> float:
             x1 = [p['x'] for p in rect1]
@@ -146,6 +146,9 @@ def pics_ocr(image_file_WenJianJia: str, save_name: str,
         else:
             result.append(temp)
 
+    if save_name == '':
+        save_name = image_file_WenJianJia.split('/')[-1]
+
     if save_name[-4:] == '.txt':
         save_file = 'jpg_txt/' + save_name
     else:
@@ -194,6 +197,6 @@ if __name__ == "__main__":
     #     a = pdf_ocr('pdfs/' + f, f.split('.')[0])
     #     print(f)
 
-    pics_ocr('jpgs/170', '170')
+    pics_ocr('jpgs/108', '108')
 
     pass

@@ -5,7 +5,7 @@ import numpy as np
 from matplotlib.patches import Polygon
 from sklearn.cluster import DBSCAN
 
-with open('101.json', 'r') as f:
+with open('108.json', 'r') as f:
     a = json.load(f)
     b = []
     for each in a:
@@ -65,7 +65,7 @@ for i in range(len(data)):
             dist_matrix[i, j] = distance(data[i], data[j])
 
 # 使用DBSCAN进行聚类
-dbscan = DBSCAN(eps=220, min_samples=1, metric='precomputed')
+dbscan = DBSCAN(eps=200, min_samples=1, metric='precomputed')
 labels = dbscan.fit_predict(dist_matrix)
 
 # 打印聚类结果

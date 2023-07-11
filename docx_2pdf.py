@@ -8,7 +8,10 @@ if not os.path.exists('pdfs'):
     os.mkdir('pdfs')
 
 
-def docx_2pdf(docx_file: str, save_name):  # doc/docx都支持，在win下面必须有ms office，在linux下面必须有libre office
+def docx_2pdf(docx_file: str, save_name=''):  # doc/docx都支持，在win下面必须有ms office，在linux下面必须有libre office
+    if save_name == '':
+        save_name = docx_file.split('/')[-1].split('.')[0]
+
     if save_name[-4:] == '.pdf':
         save_file = 'pdfs/' + save_name
     else:
