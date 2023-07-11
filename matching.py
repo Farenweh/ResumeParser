@@ -7,15 +7,6 @@ import openai
 from config import Config
 
 isLogging = False
-openai_key_file = 'config/key'
-
-if not os.path.exists('matches'):
-    os.mkdir('matches')
-
-with open(openai_key_file, 'r', encoding='utf-8') as f_:
-    openai_key = f_.read()
-openai.api_key = openai_key
-openai.api_base = Config.url
 
 
 def matching(report: dict) -> dict:
@@ -39,6 +30,11 @@ def matching(report: dict) -> dict:
             with open('prompts/reset.pmt', 'r', encoding='utf-8') as resetPrompt:
                 question = resetPrompt.read() + '\n' + question
 
+        if not os.path.exists('matches'):
+            os.mkdir('matches')
+        openai.api_key = Config.key0
+        openai.api_base = Config.url0
+
         try:
             rsp = openai.ChatCompletion.create(
                 model=model,
@@ -49,7 +45,7 @@ def matching(report: dict) -> dict:
                 temperature=0.1,
             )
         except:
-            time.sleep(10)
+            time.sleep(5)
             rsp = openai.ChatCompletion.create(
                 model=model,
                 messages=[
