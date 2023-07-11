@@ -6,18 +6,7 @@ import openai
 
 from config import Config
 
-# os.environ["HTTP_PROXY"] = proxyConfig.proxy
-# os.environ["HTTPS_PROXY"] = proxyConfig.proxy
 isLogging = False
-openai_key_file = 'config/key'
-
-if not os.path.exists('profiles'):
-    os.mkdir('profiles')
-
-with open(openai_key_file, 'r', encoding='utf-8') as f_:
-    openai_key = f_.read()
-openai.api_key = openai_key
-openai.api_base = Config.url
 
 
 def profiling(reportDict: dict) -> dict:
@@ -34,6 +23,11 @@ def profiling(reportDict: dict) -> dict:
                 question = resetPrompt.read() + '\n' + question
 
         try:
+            if not os.path.exists('profiles'):
+                os.mkdir('profiles')
+
+            openai.api_key = Config.key0
+            openai.api_base = Config.url0
             rsp = openai.ChatCompletion.create(
                 model=model,
                 messages=[
@@ -43,7 +37,7 @@ def profiling(reportDict: dict) -> dict:
                 temperature=0.1,
             )
         except:
-            time.sleep(20)
+            time.sleep(5)
             rsp = openai.ChatCompletion.create(
                 model=model,
                 messages=[

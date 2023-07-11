@@ -8,21 +8,10 @@ import openai
 import dataMasker
 from config import Config
 
-# os.environ["HTTP_PROXY"] = proxyConfig.proxy
-# os.environ["HTTPS_PROXY"] = proxyConfig.proxy  # 在更换系统后修改为正确的代理
 isLogging = False
-openai_key_file = 'config/key'
-
-if not os.path.exists('reports'):
-    os.mkdir('reports')
-
-with open(openai_key_file, 'r', encoding='utf-8') as f_:
-    openai_key = f_.read()
-openai.api_key = openai_key
-openai.api_base = Config.url
 
 
-def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config.model0,
+def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config.model1,
                role="You're an information extracting function",
                reset=True) -> dict or None:
     def trim(raw_content: str) -> str:
@@ -100,6 +89,10 @@ def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config
         with open('prompts/reset.pmt', 'r', encoding='utf-8') as resetPrompt:
             question = resetPrompt.read() + '\n' + question
 
+    if not os.path.exists('reports'):
+        os.mkdir('reports')
+    openai.api_key = Config.key1
+    openai.api_base = Config.url1
     try:
         rsp = openai.ChatCompletion.create(
             model=model,
@@ -110,7 +103,7 @@ def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config
             temperature=0.1,
         )
     except:
-        time.sleep(5)
+        time.sleep(15)
         rsp = openai.ChatCompletion.create(
             model=model,
             messages=[
