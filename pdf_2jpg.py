@@ -19,7 +19,7 @@ def pdf_2jpg(pdf_file: str, save_name: str, combine=True) -> Image.Image | list:
         contrast = 2
         return enh_con.enhance(contrast)
 
-    pages = convert_from_path(pdf_file, dpi=500, jpegopt={'quality': 90}, thread_count=16, grayscale=True)
+    pages = convert_from_path(pdf_file, dpi=400, jpegopt={'quality': 80}, thread_count=16, grayscale=True)
 
     if combine is False:
         forReturn = []

@@ -3,7 +3,6 @@ import ast
 import csv
 import json
 import re
-import time
 
 from extracting import extracting
 from pdf_2jpg import pdf_2jpg
@@ -128,12 +127,12 @@ if __name__ == '__main__':
     # print('程序运行时间:%.2f秒' % t)
     # print()
 
-    print('may need 60 seconds for per content')
-    T1 = time.time()
-    extractDev(101, 102, 'pdf_txt')
-    T2 = time.time()
-    t = (T2 - T1)
-    print('程序运行时间:%.2f秒' % t)
+    # print('may need 60 seconds for per content')
+    # T1 = time.time()
+    # extractDev(101, 102, 'pdf_txt')
+    # T2 = time.time()
+    # t = (T2 - T1)
+    # print('程序运行时间:%.2f秒' % t)
 
     # a = restoreReportsDictFromCSV('test1.csv')
     # print()
@@ -156,5 +155,8 @@ if __name__ == '__main__':
     #         # 写入数据行
     #         writer.writerow(a[i].values())
     # print()
+
+
+
 
     pass

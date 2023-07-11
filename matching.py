@@ -22,12 +22,16 @@ def matching(report: dict) -> dict:
 
     def analyze(features: str, requirements: str, promptFile='prompts/matching.pmt', model=Config.model,
                 role="You're an HR",
-                reset=True) -> bool:
+                reset=False, progressSign=False) -> bool:
         def getPrompt(prompt_file: str) -> str:
             with open(prompt_file, 'r', encoding='utf-8') as f:
                 return f.read()
 
-        question = requirements + "\n" + features + '\n' + getPrompt(promptFile)
+        if progressSign is False:
+            question = requirements + "\n" + features + '\n' + getPrompt(promptFile)
+        else:
+            question = requirements + '\n' + getPrompt(promptFile)
+
         if reset is True:
             with open('prompts/reset.pmt', 'r', encoding='utf-8') as resetPrompt:
                 question = resetPrompt.read() + '\n' + question
@@ -58,11 +62,15 @@ def matching(report: dict) -> dict:
     repoForAnalyze = selected_dict_to_str(report, selected)
 
     matchingResult = {}
+    # done 让模型记忆features 以节省token
+    inProgress = False
     for jobFile in os.listdir('jobTitles'):
         with open('jobTitles/' + jobFile, 'r', encoding='utf-8') as f:
             jobTitleRequirement = f.read()
-            matchingResult[jobFile.split('.')[0]] = analyze(repoForAnalyze, jobTitleRequirement)
+            matchingResult[jobFile.split('.')[0]] = analyze(repoForAnalyze, jobTitleRequirement,
+                                                            progressSign=inProgress)
         # print(jobFile, matchingResult[jobFile.split('.')[0]])
+        inProgress = True
     return matchingResult
 
 
