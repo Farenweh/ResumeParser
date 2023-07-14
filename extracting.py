@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import re
@@ -70,7 +71,7 @@ def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config
                 workMonth += monthPoints[1] - monthPoints[0]
             except:
                 return -1
-        if workMonth < 0:
+        if workMonth <= 0:
             workYear += int(workMonth / 12)
         else:
             workYear += int(workMonth / 12) + 1
@@ -91,8 +92,8 @@ def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config
 
     if not os.path.exists('reports'):
         os.mkdir('reports')
-    openai.api_key = Config.key1
-    openai.api_base = Config.url1
+    openai.api_key = Config.key0
+    openai.api_base = Config.url0
     try:
         rsp = openai.ChatCompletion.create(
             model=model,
@@ -102,10 +103,11 @@ def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config
             ],
             temperature=0.1,
         )
+        print('Fault0')
     except:
-        time.sleep(15)
+        time.sleep(30)
         rsp = openai.ChatCompletion.create(
-            model=model,
+            model=Config.model5,
             messages=[
                 {"role": "function", "content": role, 'name': 'Extractor'},
                 {"role": "user", "content": question},
@@ -122,7 +124,7 @@ def extracting(resumeString: str, promptFile='prompts/extract.pmt', model=Config
     reportDict = eval(content)
     reportDict['工作年限'] = workAgeCalculator(reportDict['工作经历'])
     # cache
-    with open('reports/' + str(hash(resumeString)) + '.json', 'w') as f:
+    with open('reports/' + hashlib.md5(resumeString.encode(encoding='UTF-8')).hexdigest() + '.json', 'w') as f:
         json.dump(reportDict, f)
     return reportDict
 

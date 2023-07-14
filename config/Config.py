@@ -1,10 +1,10 @@
 proxy = "http://127.0.0.1:7890"  # 在更换系统后修改为正确的代理 Deprecated
-url0 = "https://api.ai-yyds.com/v1"
-url1 = "https://api.chatanywhere.com.cn/v1"
-model0 = "gpt-4-0613"
+url0 = "https://api.chatanywhere.com.cn/v1"
+key0 = "sk-tRsnyMrWHzM8peNefmAWcZ2WZK8CCvwLqigCHu3D61Mfxiff"
+model0 = "gpt-4-0613"  # deprecated
 model1 = "gpt-4-poe"
 model2 = "gpt-3.5-turbo-16k"
 model3 = "gpt-3.5-turbo-0613"
 model4 = "../LLaMAModel/AIpaca-13B"
-key0 = "sk-unqUUKQ7rlLDS7Ve840f0d1cEa8840DdBa6d292fF716AaFa"
-key1 = "sk-tRsnyMrWHzM8peNefmAWcZ2WZK8CCvwLqigCHu3D61Mfxiff"
+model5 = "gpt-4"
+layout_threshold = 100

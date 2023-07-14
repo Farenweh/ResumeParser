@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 import time
@@ -10,7 +11,7 @@ isLogging = False
 
 
 def profiling(reportDict: dict) -> dict:
-    def summarize(report: dict, promptFile='prompts/profiling.pmt', model=Config.model0,
+    def summarize(report: dict, promptFile='prompts/profiling.pmt', model=Config.model1,
                   role="You're a summarizing function",
                   reset=True) -> dict:
         def getPrompt(prompt_file: str) -> str:
@@ -37,9 +38,9 @@ def profiling(reportDict: dict) -> dict:
                 temperature=0.1,
             )
         except:
-            time.sleep(5)
+            time.sleep(30)
             rsp = openai.ChatCompletion.create(
-                model=model,
+                model=Config.model5,
                 messages=[
                     {"role": "function", "content": role, 'name': 'Summarize'},
                     {"role": "user", "content": question},
@@ -59,9 +60,9 @@ def profiling(reportDict: dict) -> dict:
     for e in report['工作经历']:
         profile['工作经历'].append({'公司': e['公司名称'], '职位': e['职位'], '工作时间': e['工作时间']})
     rsp = summarize(report)
-    profile['行业经验'] = rsp['行业']
-    profile['领域方向'] = rsp['领域']
-    with open('profiles/' + str(hash(report.values())) + '.json', 'w') as f:
+    profile['行业经验'] = rsp.get('行业')
+    profile['领域方向'] = rsp.get('领域')
+    with open('profiles/' + hashlib.md5(str(report).encode(encoding='UTF-8')).hexdigest() + '.json', 'w') as f:
         json.dump(profile, f)
     return profile
 

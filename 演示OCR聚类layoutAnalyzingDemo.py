@@ -5,6 +5,8 @@ import numpy as np
 from matplotlib.patches import Polygon
 from sklearn.cluster import DBSCAN
 
+from config.Config import layout_threshold
+
 with open('108.json', 'r') as f:
     a = json.load(f)
     b = []
@@ -28,8 +30,8 @@ for rect in rects:
     draw_rectangle(rect)
 
 # 设置坐标轴范围
-plt.xlim(0, 5500)
-plt.ylim(0, 5500)
+plt.xlim(0, 5000)
+plt.ylim(0, 5000)
 ax = plt.gca()
 ax.invert_yaxis()  # y轴反向
 
@@ -65,7 +67,7 @@ for i in range(len(data)):
             dist_matrix[i, j] = distance(data[i], data[j])
 
 # 使用DBSCAN进行聚类
-dbscan = DBSCAN(eps=200, min_samples=1, metric='precomputed')
+dbscan = DBSCAN(eps=layout_threshold, min_samples=1, metric='precomputed')
 labels = dbscan.fit_predict(dist_matrix)
 
 # 打印聚类结果
@@ -79,8 +81,8 @@ for i in range(len(data)):
     polygon = Polygon([(p['x'], p['y']) for p in data[i]], fill=None, edgecolor=colors[labels[i]])
     ax.add_patch(polygon)
 
-ax.set_xlim([0, 5500])
-ax.set_ylim([0, 5500])
+ax.set_xlim([0, 5000])
+ax.set_ylim([0, 5000])
 ax.set_aspect('equal')
 ax.invert_yaxis()
 plt.show()

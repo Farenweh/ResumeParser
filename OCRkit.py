@@ -10,16 +10,19 @@ import pdfplumber
 from ecloud import CMSSEcloudOcrClient
 from sklearn.cluster import DBSCAN
 
-access_key = '24ddbf072db74f57b0afdf26a9be9048'
-secret_key = '3610c16b398d4f6c90184ef91cd98910'
+from config.Config import layout_threshold
+
+access_key = 'b3fa5ce678424da39780042bfa774bba'
+secret_key = 'a136c73a1522465caf0c5ed575fb5001'
 url = 'https://api-wuxi-1.cmecloud.cn:8443'
 
 
 def pics_ocr(image_file_WenJianJia: str, save_name='',
-             synthesize_between_pages=True) -> str | list:  # image_file是文件夹！文件夹！默认会一次性把文件夹下面的所有图片都OCR一遍然后粘成一个str，否则按图片分开放进list
+             synthesize_between_pages=True,
+             layout_demo=False) -> str | list:  # image_file是文件夹！文件夹！默认会一次性把文件夹下面的所有图片都OCR一遍然后粘成一个str，否则按图片分开放进list
     def ECloud_ocr_request(image_path: str) -> None | list:
         time.sleep(1)  # 防止被当成ddos
-        request_url = '/api/ocr/v1/generic'
+        request_url = '/api/ocr/v1/webimage'
         try:
             ocr_client = CMSSEcloudOcrClient(access_key, secret_key, url)
             response = ocr_client.request_ocr_service_file(requestpath=request_url, imagepath=image_path)
@@ -33,6 +36,9 @@ def pics_ocr(image_file_WenJianJia: str, save_name='',
             if response_dict.get('body') is None:
                 return None
             words_info = response_dict.get('body')['content']['prism_wordsInfo']
+
+            if layout_demo is True:
+                layoutAnalyzeDemo(words_info)
 
             # done 通过每个character的置信度筛查，阈值待定，但对数字和.除外（一律保留，OCR API的0置信率低BUG）
             # threshold没P用，再弱智的错误Prob都有0.95，要检查confidence
@@ -71,16 +77,17 @@ def pics_ocr(image_file_WenJianJia: str, save_name='',
                 words_info.pop(i)
 
             # done Layout Analyze
-            final_words = layoutAnalyze(words_info)
+            words_info=layoutAnalyze(words_info)
+
             # # debug
             # with open('108.json', 'w') as debug:
             #     json.dump(words_info, debug)
             # # debug
-            return final_words
+            return words_info
         except ValueError as error:
             print(error)
 
-    def layoutAnalyze(input_Words_Info: list, threshold=200) -> list:
+    def layoutAnalyze(input_Words_Info: list, threshold=layout_threshold) -> list:
         # 将传入的words_info进行layout分析，然后重排序并回传
         def distance(rect1, rect2) -> float:
             x1 = [p['x'] for p in rect1]
@@ -139,8 +146,9 @@ def pics_ocr(image_file_WenJianJia: str, save_name='',
     for pic in os.listdir(image_file_WenJianJia):
         content_list = ECloud_ocr_request(image_file_WenJianJia + '/' + pic)
         temp = ''
-        for content in content_list:
-            temp += content['word'] + ' '
+        if content_list is not None:
+            for content in content_list:
+                temp += content['word'] + ' '
         if synthesize_between_pages is True:
             result += temp
         else:
@@ -187,6 +195,83 @@ def pdf_ocr(pdf_file: str, save_name: str) -> str:
     return final_result
 
 
+def layoutAnalyzeDemo(a: dict):
+    from matplotlib import pyplot as plt
+    from matplotlib.patches import Polygon
+    b = []
+    for each in a:
+        b.append({'word': each['word'],
+                  'position': each['position']})
+
+    rects = []
+    for each in b:
+        rects.append(each['position'])
+    print(b)
+
+    def draw_rectangle(rect):
+        x = [p['x'] for p in rect]
+        y = [p['y'] for p in rect]
+        plt.plot(x + [x[0]], y + [y[0]], color='red')
+
+    # 绘制所有矩形
+    for rect in rects:
+        draw_rectangle(rect)
+
+    # 设置坐标轴范围
+    plt.xlim(0, 5000)
+    plt.ylim(0, 5000)
+    ax = plt.gca()
+    ax.invert_yaxis()  # y轴反向
+
+    # 显示图像
+    # plt.show()
+
+    # 将每个矩形表示为一个点
+    # 数据格式为：[[{'x': x1, 'y': y1}, {'x': x2, 'y': y2}, {'x': x3, 'y': y3}, {'x': x4, 'y': y4}], ...]
+
+    # 数据转换为NumPy数组
+    data = np.array(rects)
+
+    # 计算矩形之间的距离
+    def distance(rect1, rect2):
+        x1 = [p['x'] for p in rect1]
+        y1 = [p['y'] for p in rect1]
+        x2 = [p['x'] for p in rect2]
+        y2 = [p['y'] for p in rect2]
+        dx = np.max([np.min(x2) - np.max(x1), 0, np.min(x1) - np.max(x2), 0])
+        dy = np.max([np.min(y2) - np.max(y1), 0, np.min(y1) - np.max(y2), 0])
+        return np.sqrt(dx * dx + dy * dy)
+
+    # 计算矩形之间的距离矩阵
+    dist_matrix = np.zeros((len(data), len(data)))
+    for i in range(len(data)):
+        for j in range(len(data)):
+            if i == j:
+                dist_matrix[i, j] = 0
+            else:
+                dist_matrix[i, j] = distance(data[i], data[j])
+
+    # 使用DBSCAN进行聚类
+    dbscan = DBSCAN(eps=layout_threshold, min_samples=1, metric='precomputed')
+    labels = dbscan.fit_predict(dist_matrix)
+
+    # 打印聚类结果
+    print(labels)
+    fig, ax = plt.subplots()
+
+    colors = ['r', 'g', 'b', 'c', 'm', 'y', 'k', '#FFA500', '#800080', '#008080', '#FFC0CB', '#800000', '#FF00FF',
+              '#00FFFF', '#FF69B4', '#FFFF00', '#008000', '#FF7F50', '#800080', '#FF4500']
+    for i in range(len(data)):
+        polygon = Polygon([(p['x'], p['y']) for p in data[i]], fill=None, edgecolor=colors[labels[i]])
+        ax.add_patch(polygon)
+
+    ax.set_xlim([0, 5000])
+    ax.set_ylim([0, 5000])
+    ax.set_aspect('equal')
+    ax.invert_yaxis()
+    plt.show()
+
+
 if __name__ == "__main__":
     # for f in os.listdir('jpgs'):
     #     for pic in os.listdir('jpgs/' + f):
@@ -197,6 +282,6 @@ if __name__ == "__main__":
     #     a = pdf_ocr('pdfs/' + f, f.split('.')[0])
     #     print(f)
 
-    pics_ocr('jpgs/108', '108')
+    pics_ocr('jpgs/109', '109',layout_demo=True)
 
     pass
