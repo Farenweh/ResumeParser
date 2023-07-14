@@ -26,7 +26,7 @@ print(OCR_Analyzed_result)
 # 当LLaMA和GPT均在线时，由LLaMA进行数据脱敏，LLaMA和GPT共同进行信息抽取，LLaMA进行解密；
 # 当LLaMA不在线时，将自动降级到在本地使用正则表达式对邮箱和电话进行数据脱敏，由GPT执行抽取，然后本地执行反译；
 # 当GPT不在线时，使用LLaMA也可单独进行抽取，但极度占用本地资源，需要40G显存或64G内存，且效率非常低，当配置不满足需求时将触发报错。
-print('-------运行中，请等待，耗时约60秒，但这取决于您的平台配置--------')
+print('---运行中，请等待，单份简历耗时约60-120秒，但这取决于您的平台配置---')
 report = extracting.extracting(OCR_Analyzed_result)
 print('------------------Extracting report----------------------')
 print(report)

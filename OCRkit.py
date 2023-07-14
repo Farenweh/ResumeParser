@@ -277,7 +277,7 @@ if __name__ == "__main__":
     #     for pic in os.listdir('jpgs/' + f):
     #         pics_ocr('jpgs/' + f, f)
     #         print(f)
-
+    #
     # for f in os.listdir('pdfs'):
     #     a = pdf_ocr('pdfs/' + f, f.split('.')[0])
     #     print(f)
